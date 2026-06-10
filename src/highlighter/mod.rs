@@ -27,15 +27,22 @@ pub trait Highlighter: Send {
     /// Cursor position as byte offsets in the string
     fn highlight(&self, line: &str, cursor: usize) -> StyledText;
 
+    /// Returns `true` if the cursor position (a byte offset into `line`) is
+    /// inside a string literal
+    fn is_inside_string_literal(&self, line: &str, cursor: usize) -> bool {
+        let _ = (line, cursor);
+        false
+    }
+
     /// Returns `true` if an abbreviation should be expanded at the given cursor position
     /// (a byte offset into `line`), `false` if expansion should be suppressed
     ///
     /// `context` indicates which kind of expansion is being attempted so implementations
     /// can apply different veto rules per site
     ///
-    /// The default implementation always returns `true` (always expand)
+    /// The default implementation suppresses expansion inside string literals
     fn should_expand_abbr(&self, line: &str, cursor: usize, context: AbbrExpandContext) -> bool {
-        let _ = (line, cursor, context);
-        true
+        let _ = context;
+        !self.is_inside_string_literal(line, cursor)
     }
 }
